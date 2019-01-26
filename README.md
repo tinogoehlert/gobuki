@@ -74,13 +74,10 @@ import (
 )
 
 func main() {
-	// conenct via TCP
-    bot, err := kobuki.NewBotTCP("127.0.0.1:3333")
+	bot, err := kobuki.NewBotTCP("127.0.0.1:3333")
     if err != nil {
         panic(err)
     }
-    // connect via serial port
-    //bot := kobuki.NewBotSerial("/dev/ttyUSB0")
 
 	bot.Start()
 	defer bot.Stop()
@@ -93,6 +90,8 @@ TODO:
 
 - Make tolerance settings configurable.
 - Implement GPIO.
+- Add differential drive helpers.
+- Add gobot interface.
 
 Resouces:
 
