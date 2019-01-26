@@ -91,7 +91,6 @@ TODO:
 - Make tolerance settings configurable.
 - Implement GPIO.
 - Add differential drive helpers.
-- Add gobot interface.
 
 Resouces:
 
