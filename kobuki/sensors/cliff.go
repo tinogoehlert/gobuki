@@ -25,13 +25,13 @@ func NewCliffADCFromBytes(p []byte) (*CliffADC, error) {
 }
 
 // Equals compares current object with argument
-func (c *CliffADC) Equals(v *CliffADC, debounce int) bool {
+func (c *CliffADC) Equals(v *CliffADC, tolerance int) bool {
 	if v == nil {
 		return true
 	}
-	if utils.Cmp(int32(c.Center), int32(v.Center), debounce) &&
-		utils.Cmp(int32(c.Right), int32(v.Right), debounce) &&
-		utils.Cmp(int32(c.Left), int32(v.Left), debounce) {
+	if utils.Cmp(int32(c.Center), int32(v.Center), tolerance) &&
+		utils.Cmp(int32(c.Right), int32(v.Right), tolerance) &&
+		utils.Cmp(int32(c.Left), int32(v.Left), tolerance) {
 		return true
 	}
 	return false
