@@ -209,6 +209,9 @@ func (k *Bot) hasChangedData(current FeedbackData) {
 		if current.BasicSensor.ChargeState != k.lastFrame.BasicSensor.ChargeState {
 			k.emitEvent("ChargeState", &current.BasicSensor.ChargeState)
 		}
+		if current.BasicSensor.BatteryVoltage != k.lastFrame.BasicSensor.BatteryVoltage {
+			k.emitEvent("BatteryVoltage", &current.BasicSensor.BatteryVoltage)
+		}
 	}
 
 	if current.DockingIR != nil {

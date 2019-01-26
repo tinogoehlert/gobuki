@@ -33,6 +33,8 @@ const (
 	CliffADCEvent = "CliffADC"
 	// InertialEvent event
 	InertialEvent = "Inertial"
+	// BatteryVoltageEvent event
+	BatteryVoltageEvent = "BatteryVoltage"
 )
 
 const (
@@ -75,6 +77,7 @@ func NewDriver(a *Adaptor) *Driver {
 	d.AddEvent(InertialEvent)
 	d.AddEvent(DockingIREvent)
 	d.AddEvent(ChargeStateEvent)
+	d.AddEvent(BatteryVoltageEvent)
 
 	return d
 }
@@ -196,6 +199,13 @@ func (d *Driver) OnButtons(f func(*sensors.Buttons)) {
 func (d *Driver) OnChargeState(f func(*sensors.ChargeState)) {
 	d.adaptor.bot.On(ChargeStateEvent, func(data interface{}) {
 		f(data.(*sensors.ChargeState))
+	})
+}
+
+// OnBatteryVoltage Charge state changed
+func (d *Driver) OnBatteryVoltage(f func(*uint8)) {
+	d.adaptor.bot.On(ChargeStateEvent, func(data interface{}) {
+		f(data.(*uint8))
 	})
 }
 
