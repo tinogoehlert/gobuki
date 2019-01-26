@@ -126,7 +126,6 @@ func main() {
 
 TODO:
 
-- Make tolerance settings configurable.
 - Implement GPIO.
 - Add differential drive helpers.
 
