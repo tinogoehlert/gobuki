@@ -50,6 +50,15 @@ func SoundCmd(note uint16, duration byte) Command {
 	return cmd
 }
 
+func RequestCmd() Command {
+	cmd := Command{
+		ID:   0x09,
+		Data: make([]byte, 1),
+	}
+	cmd.Data[0] = 0xB
+	return cmd
+}
+
 // SoundSequence represents a constant sequence id
 type SoundSequence byte
 

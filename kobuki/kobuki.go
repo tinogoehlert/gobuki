@@ -37,15 +37,18 @@ type ToleranceCfg struct {
 
 // Bot Represents a Kobuki Bot
 type Bot struct {
-	conn         io.ReadWriteCloser
-	lastFrame    FeedbackData
-	currentFrame FeedbackData
-	Gyro         *sensors.Gyro
-	callBacks    map[string][]Callback
-	allCallback  []AllCallback
-	cmdChan      chan commands.Command
-	logChan      chan string
-	toleranceCfg ToleranceCfg
+	conn            io.ReadWriteCloser
+	lastFrame       FeedbackData
+	currentFrame    FeedbackData
+	Gyro            *sensors.Gyro
+	callBacks       map[string][]Callback
+	allCallback     []AllCallback
+	cmdChan         chan commands.Command
+	logChan         chan string
+	toleranceCfg    ToleranceCfg
+	hardwareVersion Version
+	firmwareVersion Version
+	uid             UniqueID
 }
 
 // NewBotTCP creates a new Bot instance and connects to a Kobuki Bot
@@ -88,7 +91,7 @@ func NewBotSerial(dev string) (*Bot, error) {
 
 func (k *Bot) initBot() {
 	k.Gyro = sensors.NewGyroADC(64, 8)
-	k.cmdChan = make(chan commands.Command)
+	k.cmdChan = make(chan commands.Command, 1)
 	k.callBacks = make(map[string][]Callback)
 	k.logChan = make(chan string)
 	k.allCallback = []AllCallback{}
@@ -106,7 +109,11 @@ func (k *Bot) Stop() {
 // Start read loop
 func (k *Bot) Start() {
 	packetReader := packets.NewPacketReader(bufio.NewReader(k.conn))
+
 	go func() {
+		reqTick := time.Tick(10 * time.Second)
+		reqCmd := commands.RequestCmd()
+		k.conn.Write(reqCmd.Serialize())
 		for {
 			select {
 			case cmd := <-k.cmdChan:
@@ -114,6 +121,8 @@ func (k *Bot) Start() {
 				if err != nil {
 					fmt.Printf("could not send command: %s\n", err.Error())
 				}
+			case <-reqTick:
+				k.conn.Write(reqCmd.Serialize())
 			default:
 			}
 			b, err := packetReader.ReadData()
@@ -127,7 +136,25 @@ func (k *Bot) Start() {
 			}
 		}
 	}()
+
+	// warmup
+	time.Sleep(500 * time.Millisecond)
 	return
+}
+
+// HardwareVersion returns HardwareVersion string
+func (k *Bot) HardwareVersion() string {
+	return k.hardwareVersion.String()
+}
+
+// FirmwareVersion returns FirmwareVersion string
+func (k *Bot) FirmwareVersion() string {
+	return k.firmwareVersion.String()
+}
+
+// UniqueID returns UID string
+func (k *Bot) UniqueID() string {
+	return k.uid.String()
 }
 
 // SetCliffADCTolerance set tolerance for Cliff ADC
@@ -265,11 +292,14 @@ func (k *Bot) parseFrame(buffer []byte) FeedbackData {
 			data.CliffADC, err = sensors.NewCliffADCFromBytes(buffer[offset+2 : offset+subLen+2])
 		case (subID == 0x06 && subLen == 0x02):
 			data.CurrenWheels, err = sensors.NewCurrentWheelsFromBytes(buffer[offset+2 : offset+subLen+2])
+		case (subID == 0x0A && subLen == 0x04):
+			k.hardwareVersion.FromBytes(buffer[offset+2 : offset+subLen+2])
+		case (subID == 0x0B && subLen == 0x04):
+			k.firmwareVersion.FromBytes(buffer[offset+2 : offset+subLen+2])
 		case (subID == 0x0D):
 			k.Gyro.Read(buffer[offset+2 : offset+subLen+2])
-		default:
-			offset++
-			continue
+		case (subID == 0x13 && subLen == 0x0C):
+			k.uid.FromBytes(buffer[offset+2 : offset+subLen+2])
 		}
 
 		if err != nil {
