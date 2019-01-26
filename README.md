@@ -2,7 +2,7 @@
 
 ## go driver for kobuki bot based platforms (e.g. turtlebot v2)
 
-![picture missing :(](https://github.com/adam-p/markdown-here/raw/master/resources/kobuki.webp "Kobuki Bot")
+![picture missing :(](https://github.com/tinogoehlert/go-kobuki/raw/master/resources/kobuki.webp "Kobuki Bot")
 
 
 still in developement, interface may change.
