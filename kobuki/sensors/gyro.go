@@ -34,7 +34,6 @@ type Gyro struct {
 	last             *GyroData
 	delta            GyroData
 	tolerance        GyroData
-	toleranceScalar  float64
 	bucketSize       int
 	readCount        int
 	calibrateSamples int
@@ -42,25 +41,24 @@ type Gyro struct {
 }
 
 // NewGyroADC generates a new Gyro Objects from bytes
-func NewGyroADC(bucketSize, calibrateSamples int, tolerance float64) *Gyro {
+func NewGyroADC(bucketSize, calibrateSamples int) *Gyro {
 	gyro := Gyro{
 		Data:             make([]GyroData, bucketSize),
 		bucketSize:       bucketSize,
 		calibrateSamples: calibrateSamples,
-		toleranceScalar:  tolerance,
 	}
 	return &gyro
 }
 
 // Changed check if values changed significantly
-func (g *Gyro) Changed() bool {
+func (g *Gyro) Changed(tolerance float64) bool {
 	if g.last == nil || g.newest == nil {
 		return false
 	}
 
-	if !utils.Cmpf(g.newest.X, g.last.X, g.toleranceScalar) ||
-		!utils.Cmpf(g.newest.Z, g.last.Z, g.toleranceScalar) ||
-		!utils.Cmpf(g.newest.Z, g.last.Z, g.toleranceScalar) {
+	if !utils.Cmpf(g.newest.X, g.last.X, tolerance) ||
+		!utils.Cmpf(g.newest.Z, g.last.Z, tolerance) ||
+		!utils.Cmpf(g.newest.Z, g.last.Z, tolerance) {
 		return true
 	}
 

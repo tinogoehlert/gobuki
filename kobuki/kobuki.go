@@ -25,6 +25,16 @@ type FeedbackData struct {
 // Callback represents a Callback that carries changed data from kobuki bot
 type Callback func(interface{})
 
+// AllCallback represents a Callback that carries changed data from kobuki bot
+type AllCallback func(string, interface{})
+
+// ToleranceCfg represents the tolerance settings for specific sensors
+type ToleranceCfg struct {
+	gyro          float64
+	cliffADC      int
+	currentWheels int
+}
+
 // Bot Represents a Kobuki Bot
 type Bot struct {
 	conn         io.ReadWriteCloser
@@ -32,8 +42,10 @@ type Bot struct {
 	currentFrame FeedbackData
 	Gyro         *sensors.Gyro
 	callBacks    map[string][]Callback
+	allCallback  []AllCallback
 	cmdChan      chan commands.Command
 	logChan      chan string
+	toleranceCfg ToleranceCfg
 }
 
 // NewBotTCP creates a new Bot instance and connects to a Kobuki Bot
@@ -75,10 +87,15 @@ func NewBotSerial(dev string) (*Bot, error) {
 }
 
 func (k *Bot) initBot() {
-	k.Gyro = sensors.NewGyroADC(64, 8, 0.01)
+	k.Gyro = sensors.NewGyroADC(64, 8)
 	k.cmdChan = make(chan commands.Command)
 	k.callBacks = make(map[string][]Callback)
 	k.logChan = make(chan string)
+	k.allCallback = []AllCallback{}
+	k.toleranceCfg = ToleranceCfg{
+		gyro:     0.01,
+		cliffADC: 50,
+	}
 }
 
 // Stop disconnects from a Bot
@@ -113,12 +130,32 @@ func (k *Bot) Start() {
 	return
 }
 
+// SetCliffADCTolerance set tolerance for Cliff ADC
+func (k *Bot) SetCliffADCTolerance(t int) {
+	k.toleranceCfg.cliffADC = t
+}
+
+// SetGyroTolerance set tolerance for gyroscope
+func (k *Bot) SetGyroTolerance(t float64) {
+	k.toleranceCfg.gyro = t
+}
+
+// SetCurrentWheelsTolerance set tolerance for wheels current
+func (k *Bot) SetCurrentWheelsTolerance(t int) {
+	k.toleranceCfg.currentWheels = t
+}
+
 //On registers a new Callback
 func (k *Bot) On(event string, cb Callback) {
 	if _, ok := k.callBacks[event]; !ok {
 		k.callBacks[event] = []Callback{}
 	}
 	k.callBacks[event] = append(k.callBacks[event], cb)
+}
+
+//OnAll registers a new Callback for all events
+func (k *Bot) OnAll(cb AllCallback) {
+	k.allCallback = append(k.allCallback, cb)
 }
 
 // Send sends Command to Bot
@@ -136,6 +173,10 @@ func (k *Bot) emitEvent(name string, data interface{}) {
 		for _, callback := range callbacks {
 			callback(data)
 		}
+	}
+
+	for _, callback := range k.allCallback {
+		callback(name, data)
 	}
 }
 
@@ -177,14 +218,21 @@ func (k *Bot) hasChangedData(current FeedbackData) {
 	}
 
 	if current.CliffADC != nil {
-		if !current.CliffADC.Equals(k.lastFrame.CliffADC, 50) {
+		if !current.CliffADC.Equals(k.lastFrame.CliffADC, k.toleranceCfg.cliffADC) {
 			k.emitEvent("CliffADC", current.CliffADC)
 		}
 	}
 
-	if k.Gyro != nil && k.Gyro.Changed() {
+	if current.CurrenWheels != nil {
+		if !current.CurrenWheels.Equals(k.lastFrame.CurrenWheels, k.toleranceCfg.currentWheels) {
+			k.emitEvent("CurrentWheels", current.CurrenWheels)
+		}
+	}
+
+	if k.Gyro != nil && k.Gyro.Changed(k.toleranceCfg.gyro) {
 		k.emitEvent("Gyro", k.Gyro.GetNewData())
 	}
+
 	if current.InerTial != nil {
 		if !current.InerTial.Equals(k.lastFrame.InerTial) {
 			k.emitEvent("Inertial", current.InerTial)
