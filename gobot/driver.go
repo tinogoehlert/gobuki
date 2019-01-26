@@ -127,8 +127,8 @@ func (d *Driver) Move(velocity, rotation int16) {
 }
 
 // PlaySoundSequence plays a sound sequence on the robot
-func (d *Driver) PlaySoundSequence(sequence uint8) {
-	d.adaptor.bot.Send(commands.SoundSequenceCmd(commands.SoundSequence(sequence)))
+func (d *Driver) PlaySoundSequence(sequence commands.SoundSequence) {
+	d.adaptor.bot.Send(commands.SoundSequenceCmd(sequence))
 }
 
 // Connection returns the Connection associated with the Driver

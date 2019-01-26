@@ -2,25 +2,30 @@ package main
 
 import (
 	"log"
+	"time"
 
 	gk "github.com/tinogoehlert/go-kobuki/gobot"
-	"github.com/tinogoehlert/go-kobuki/kobuki/sensors"
+	ks "github.com/tinogoehlert/go-kobuki/kobuki/sensors"
 	"gobot.io/x/gobot"
 )
 
 func main() {
-	adapter := gk.NewAdaptorTCP("127.0.0.1:3333")
-	kobukiBot := gk.NewDriver(adapter)
+	a := gk.NewAdaptorTCP("127.0.0.1:3333")
+	kb := gk.NewDriver(a)
 
 	work := func() {
-		kobukiBot.OnGyro(func(g *sensors.GyroData) {
-			log.Printf("%f:%f:%f", g.X, g.Y, g.Z)
+		kb.OnWheelsCurrent(func(w *ks.CurrentWheels) {
+			log.Printf("%d:%d", w.LeftMotor, w.RightMotor)
+		})
+
+		gobot.Every(1*time.Minute, func() {
+			kb.PlaySoundSequence(gk.SoundOn)
 		})
 	}
 
 	robot := gobot.NewRobot("kobuki",
-		[]gobot.Connection{adapter},
-		[]gobot.Device{kobukiBot},
+		[]gobot.Connection{a},
+		[]gobot.Device{kb},
 		work,
 	)
 
