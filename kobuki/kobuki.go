@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"time"
 
@@ -34,6 +33,7 @@ type Bot struct {
 	Gyro         *sensors.Gyro
 	callBacks    map[string][]Callback
 	cmdChan      chan commands.Command
+	logChan      chan string
 }
 
 // NewBotTCP creates a new Bot instance and connects to a Kobuki Bot
@@ -78,6 +78,7 @@ func (k *Bot) initBot() {
 	k.Gyro = sensors.NewGyroADC(64, 8, 0.01)
 	k.cmdChan = make(chan commands.Command)
 	k.callBacks = make(map[string][]Callback)
+	k.logChan = make(chan string)
 }
 
 // Stop disconnects from a Bot
@@ -100,7 +101,7 @@ func (k *Bot) Start() {
 			}
 			b, err := packetReader.ReadData()
 			if err != nil {
-				log.Println(err)
+				k.logChan <- err.Error()
 			}
 			if b != nil {
 				currentFrame := k.parseFrame(b)
@@ -123,6 +124,11 @@ func (k *Bot) On(event string, cb Callback) {
 // Send sends Command to Bot
 func (k *Bot) Send(cmd commands.Command) {
 	k.cmdChan <- cmd
+}
+
+// LogChannel waits and returns log entry. blocking
+func (k *Bot) LogChannel() string {
+	return <-k.logChan
 }
 
 func (k *Bot) emitEvent(name string, data interface{}) {
@@ -216,7 +222,8 @@ func (k *Bot) parseFrame(buffer []byte) FeedbackData {
 		}
 
 		if err != nil {
-			fmt.Printf("could not parse data: %s\n", err.Error())
+			fmt.Println(err)
+			k.logChan <- fmt.Sprintf("could not parse data: %s", err.Error())
 		}
 
 		offset += subLen + 2

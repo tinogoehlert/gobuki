@@ -15,34 +15,52 @@ still in developement, interface may change.
 package main
 
 import (
+	"flag"
+	"fmt"
 	"log"
-	"time"
 
 	"github.com/tinogoehlert/go-kobuki/kobuki"
 	"github.com/tinogoehlert/go-kobuki/kobuki/sensors"
 )
 
-func main() {
-	// conenct via TCP
-    bot, err := kobuki.NewBotTCP("127.0.0.1:3333")
-        if err != nil {
-        panic(err)
-    }
-    // connect via serial port
-    //bot := kobuki.NewBotSerial("/dev/ttyUSB0")
+var (
+	tcpAddr    = flag.String("tcp", "", "ip adress:port")
+	serialPort = flag.String("serial", "", "serial port")
+)
 
-	bot.On("Gyro", func(data interface{}) {
-		bs := data.(*sensors.GyroData)
-		log.Printf("Gyro: %f : %F : %f", bs.X, bs.Y, bs.Z)
-	})
+func main() {
+	var (
+		bot    *kobuki.Bot
+		conErr error
+	)
+
+	flag.Parse()
+
+	switch {
+	case *tcpAddr != "":
+		bot, conErr = kobuki.NewBotTCP(*tcpAddr)
+	case *serialPort != "":
+		bot, conErr = kobuki.NewBotSerial(*serialPort)
+	default:
+		log.Fatalf("no adress or serial port given")
+	}
+
+	if conErr != nil {
+		log.Fatalf(conErr.Error())
+	}
 
 	bot.Start()
 	defer bot.Stop()
 
+	bot.On("Gyro", func(data interface{}) {
+		d := data.(*sensors.GyroData)
+		fmt.Println(d)
+	})
+
 	for {
-		time.Sleep(1 * time.Second)
+		log.Println(bot.LogChannel())
 	}
-}∏
+}
 ```
 
 #### Send sound sequence command
@@ -75,7 +93,6 @@ TODO:
 
 - Make tolerance settings configurable.
 - Implement GPIO.
-- Export internal log stream as channel.
 
 Resouces:
 
