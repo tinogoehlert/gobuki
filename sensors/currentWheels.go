@@ -1,7 +1,7 @@
 package sensors
 
 import (
-	"github.com/tinogoehlert/go-kobuki/kobuki/utils"
+	"github.com/tinogoehlert/gobuki/utils"
 )
 
 // CurrentWheels represents Current sensor readings of wheel motors in mA.

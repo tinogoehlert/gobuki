@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/tinogoehlert/go-kobuki/kobuki"
-	"github.com/tinogoehlert/go-kobuki/kobuki/sensors"
+	"github.com/tinogoehlert/gobuki"
+	"github.com/tinogoehlert/gobuki/sensors"
 )
 
 var (
@@ -16,7 +16,7 @@ var (
 
 func main() {
 	var (
-		bot    *kobuki.Bot
+		bot    *gobuki.Bot
 		conErr error
 	)
 
@@ -24,9 +24,9 @@ func main() {
 
 	switch {
 	case *tcpAddr != "":
-		bot, conErr = kobuki.NewBotTCP(*tcpAddr)
+		bot, conErr = gobuki.NewBotTCP(*tcpAddr)
 	case *serialPort != "":
-		bot, conErr = kobuki.NewBotSerial(*serialPort)
+		bot, conErr = gobuki.NewBotSerial(*serialPort)
 	default:
 		log.Fatalf("no adress or serial port given")
 	}

@@ -3,7 +3,7 @@ package sensors
 import (
 	"encoding/binary"
 
-	"github.com/tinogoehlert/go-kobuki/kobuki/utils"
+	"github.com/tinogoehlert/gobuki/utils"
 )
 
 // CliffADC provides ADC data of PSD sensor, which is facing the floor.

@@ -1,4 +1,4 @@
-package kobuki
+package gobuki
 
 import (
 	"bufio"
@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/jacobsa/go-serial/serial"
-	"github.com/tinogoehlert/go-kobuki/kobuki/commands"
-	"github.com/tinogoehlert/go-kobuki/kobuki/packets"
-	"github.com/tinogoehlert/go-kobuki/kobuki/sensors"
+	"github.com/tinogoehlert/gobuki/commands"
+	"github.com/tinogoehlert/gobuki/packets"
+	"github.com/tinogoehlert/gobuki/sensors"
 )
 
 // FeedbackData represents a collection of Feedback Data

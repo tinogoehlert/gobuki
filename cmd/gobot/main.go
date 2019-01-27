@@ -4,8 +4,8 @@ import (
 	"log"
 	"time"
 
-	gk "github.com/tinogoehlert/go-kobuki/gobot"
-	ks "github.com/tinogoehlert/go-kobuki/kobuki/sensors"
+	gk "github.com/tinogoehlert/gobuki/gobot"
+	ks "github.com/tinogoehlert/gobuki/sensors"
 	"gobot.io/x/gobot"
 )
 

@@ -1,4 +1,4 @@
-package kobuki
+package gobuki
 
 import (
 	"encoding/binary"

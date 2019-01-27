@@ -2,7 +2,7 @@
 
 ## go driver for kobuki bot based platforms (e.g. turtlebot v2)
 
-![picture missing :(](https://github.com/tinogoehlert/go-kobuki/raw/master/resources/kobuki.webp "Kobuki Bot")
+![picture missing :(](https://github.com/tinogoehlert/gobuki/raw/master/resources/kobuki.webp "Kobuki Bot")
 
 
 still in developement, interface may change.
@@ -19,8 +19,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/tinogoehlert/go-kobuki/kobuki"
-	"github.com/tinogoehlert/go-kobuki/kobuki/sensors"
+	"github.com/tinogoehlert/gobuki"
+	"github.com/tinogoehlert/gobuki/sensors"
 )
 
 var (
@@ -30,7 +30,7 @@ var (
 
 func main() {
 	var (
-		bot    *kobuki.Bot
+		bot    *gobuki.Bot
 		conErr error
 	)
 
@@ -38,9 +38,9 @@ func main() {
 
 	switch {
 	case *tcpAddr != "":
-		bot, conErr = kobuki.NewBotTCP(*tcpAddr)
+		bot, conErr = gobuki.NewBotTCP(*tcpAddr)
 	case *serialPort != "":
-		bot, conErr = kobuki.NewBotSerial(*serialPort)
+		bot, conErr = gobuki.NewBotSerial(*serialPort)
 	default:
 		log.Fatalf("no adress or serial port given")
 	}
@@ -69,12 +69,12 @@ func main() {
 package main
 
 import (
-	"github.com/tinogoehlert/go-kobuki/kobuki"
-	"github.com/tinogoehlert/go-kobuki/kobuki/commands"
+	"github.com/tinogoehlert/gobuki"
+	"github.com/tinogoehlert/gobuki/commands"
 )
 
 func main() {
-	bot, err := kobuki.NewBotTCP("127.0.0.1:3333")
+	bot, err := gobuki.NewBotTCP("127.0.0.1:3333")
     if err != nil {
         panic(err)
     }
@@ -95,8 +95,8 @@ import (
 	"log"
 	"time"
 
-	gk "github.com/tinogoehlert/go-kobuki/gobot"
-	ks "github.com/tinogoehlert/go-kobuki/kobuki/sensors"
+	gk "github.com/tinogoehlert/gobuki/gobot"
+	ks "github.com/tinogoehlert/gobuki/sensors"
 	"gobot.io/x/gobot"
 )
 

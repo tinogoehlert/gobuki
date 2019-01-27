@@ -1,15 +1,13 @@
 package kobuki
 
-import (
-	"github.com/tinogoehlert/go-kobuki/kobuki"
-)
+import "github.com/tinogoehlert/gobuki"
 
 // Adaptor represents a gobot compatible kobuki adaptor
 type Adaptor struct {
 	name       string
-	bot        *kobuki.Bot
+	bot        *gobuki.Bot
 	connectStr string
-	connect    func(string) (*kobuki.Bot, error)
+	connect    func(string) (*gobuki.Bot, error)
 }
 
 // NewAdaptorTCP creates a new Adaptor with TCP connection
@@ -17,8 +15,8 @@ func NewAdaptorTCP(addr string) *Adaptor {
 	return &Adaptor{
 		name:       "Kobuki",
 		connectStr: addr,
-		connect: func(cs string) (*kobuki.Bot, error) {
-			return kobuki.NewBotTCP(cs)
+		connect: func(cs string) (*gobuki.Bot, error) {
+			return gobuki.NewBotTCP(cs)
 		},
 	}
 }
@@ -28,8 +26,8 @@ func NewAdaptorSerial(dev string) *Adaptor {
 	return &Adaptor{
 		name:       "Kobuki",
 		connectStr: dev,
-		connect: func(cs string) (*kobuki.Bot, error) {
-			return kobuki.NewBotSerial(cs)
+		connect: func(cs string) (*gobuki.Bot, error) {
+			return gobuki.NewBotSerial(cs)
 		},
 	}
 }

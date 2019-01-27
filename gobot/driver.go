@@ -3,10 +3,8 @@ package kobuki
 import (
 	"fmt"
 
-	"github.com/tinogoehlert/go-kobuki/kobuki/commands"
-
-	"github.com/tinogoehlert/go-kobuki/kobuki/sensors"
-
+	"github.com/tinogoehlert/gobuki/commands"
+	"github.com/tinogoehlert/gobuki/sensors"
 	"gobot.io/x/gobot"
 )
 

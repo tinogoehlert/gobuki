@@ -5,7 +5,7 @@ import (
 	"bytes"
 	"encoding/binary"
 
-	"github.com/tinogoehlert/go-kobuki/kobuki/utils"
+	"github.com/tinogoehlert/gobuki/utils"
 )
 
 // BasicSensor Basic core sensor data.

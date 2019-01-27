@@ -1,6 +1,6 @@
 package sensors
 
-import "github.com/tinogoehlert/go-kobuki/kobuki/utils"
+import "github.com/tinogoehlert/gobuki/utils"
 
 type DockingSignal struct {
 	None       bool

@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	"github.com/tinogoehlert/go-kobuki/kobuki/utils"
+	"github.com/tinogoehlert/gobuki/utils"
 )
 
 // GyroData stores XYZ Data from Gyro

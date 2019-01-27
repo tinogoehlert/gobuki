@@ -3,7 +3,7 @@ package commands
 import (
 	"encoding/binary"
 
-	"github.com/tinogoehlert/go-kobuki/kobuki/utils"
+	"github.com/tinogoehlert/gobuki/utils"
 )
 
 const (
