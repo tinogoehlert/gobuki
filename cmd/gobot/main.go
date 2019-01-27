@@ -13,9 +13,14 @@ func main() {
 	a := gk.NewAdaptorTCP("127.0.0.1:3333")
 	kb := gk.NewDriver(a)
 
+	kb.OnStart(func() {
+		kb.SetGyroTolerance(0)
+	})
+
 	work := func() {
-		kb.OnWheelsCurrent(func(w *ks.CurrentWheels) {
-			log.Printf("%d:%d", w.LeftMotor, w.RightMotor)
+
+		kb.OnGyro(func(g *ks.GyroData) {
+			log.Printf("%f : %f : %f", g.X, g.Y, g.Z)
 		})
 
 		gobot.Every(1*time.Minute, func() {

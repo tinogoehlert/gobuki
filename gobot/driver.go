@@ -1,6 +1,7 @@
 package kobuki
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/tinogoehlert/gobuki/commands"
@@ -52,6 +53,7 @@ const (
 type Driver struct {
 	name    string
 	adaptor *Adaptor
+	started func()
 	gobot.Eventer
 }
 
@@ -93,7 +95,7 @@ func (d *Driver) SetName(s string) {
 // Start initiates the Driver
 func (d *Driver) Start() error {
 	d.adaptor.bot.Start()
-
+	d.started()
 	d.adaptor.bot.OnAll(func(name string, data interface{}) {
 		d.Publish(name, data)
 	})
@@ -108,18 +110,30 @@ func (d *Driver) Halt() error {
 }
 
 // SetCliffADCTolerance set tolerance for Cliff ADC
-func (d *Driver) SetCliffADCTolerance(t int) {
+func (d *Driver) SetCliffADCTolerance(t int) error {
+	if d.adaptor.bot == nil {
+		return errors.New("driver not started")
+	}
 	d.adaptor.bot.SetCliffADCTolerance(t)
+	return nil
 }
 
 // SetGyroTolerance set tolerance for gyroscope
-func (d *Driver) SetGyroTolerance(t float64) {
+func (d *Driver) SetGyroTolerance(t float64) error {
+	if d.adaptor.bot == nil {
+		return errors.New("driver not started")
+	}
 	d.adaptor.bot.SetGyroTolerance(t)
+	return nil
 }
 
 // SetCurrentWheelsTolerance set tolerance for wheels current
-func (d *Driver) SetCurrentWheelsTolerance(t int) {
+func (d *Driver) SetCurrentWheelsTolerance(t int) error {
+	if d.adaptor.bot == nil {
+		return errors.New("driver not started")
+	}
 	d.adaptor.bot.SetCurrentWheelsTolerance(t)
+	return nil
 }
 
 // Move moves the robot
@@ -135,6 +149,11 @@ func (d *Driver) PlaySoundSequence(sequence commands.SoundSequence) {
 // Connection returns the Connection associated with the Driver
 func (d *Driver) Connection() gobot.Connection {
 	return d.adaptor
+}
+
+// OnStart triggered when driver was started, useful for setup
+func (d *Driver) OnStart(f func()) {
+	d.started = f
 }
 
 // OnGyro new GyroData available
