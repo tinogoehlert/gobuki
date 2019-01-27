@@ -1,4 +1,4 @@
-# go-kobuki
+# gobuki
 
 ## go driver for kobuki bot based platforms (e.g. turtlebot v2)
 
