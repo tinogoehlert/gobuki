@@ -29,13 +29,13 @@ func (c *Command) Serialize() []byte {
 }
 
 // MoveCmd Creates a Move Command (Wheel Motor Control)
-func MoveCmd(Speed, Rotation int16) Command {
+func MoveCmd(speed, rotation uint16) Command {
 	cmd := Command{
 		ID:   0x01,
 		Data: make([]byte, 4),
 	}
-	binary.LittleEndian.PutUint16(cmd.Data, uint16(Speed))
-	binary.LittleEndian.PutUint16(cmd.Data[2:], uint16(Rotation))
+	binary.LittleEndian.PutUint16(cmd.Data, speed)
+	binary.LittleEndian.PutUint16(cmd.Data[2:], rotation)
 	return cmd
 }
 

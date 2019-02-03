@@ -25,16 +25,16 @@ func main() {
 			key := data.(keyboard.KeyEvent)
 			switch key.Key {
 			case keyboard.W:
-				kb.Move(100, 0)
+				kb.Move(1, 0)
 			case keyboard.A:
-				kb.Move(100, 1)
+				kb.Move(0, 1)
 			case keyboard.S:
-				kb.Move(-100, 0)
+				kb.Move(-1, 0)
 			case keyboard.D:
-				kb.Move(100, -1)
+				kb.Move(-1, 0)
 			}
 		})
-		gobot.Every(700*time.Millisecond, func() {
+		gobot.Every(1*time.Second, func() {
 			kb.Move(0, 0)
 		})
 	}

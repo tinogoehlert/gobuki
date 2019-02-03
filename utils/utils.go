@@ -38,3 +38,14 @@ func Cmpu(a, b uint16, offset int) bool {
 func Cmpf(a, b float64, tolerance float64) bool {
 	return !(math.Abs(a-b) > tolerance)
 }
+
+func CheckMinMax16(val int16) int16 {
+	switch {
+	case val < math.MinInt16:
+		return math.MinInt16
+	case val > math.MaxInt16:
+		return math.MaxInt16
+	default:
+		return val
+	}
+}

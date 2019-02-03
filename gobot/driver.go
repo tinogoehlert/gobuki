@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/tinogoehlert/gobuki"
 	"github.com/tinogoehlert/gobuki/commands"
 	"github.com/tinogoehlert/gobuki/sensors"
 	"gobot.io/x/gobot"
@@ -55,6 +56,7 @@ type Driver struct {
 	adaptor *Adaptor
 	started func()
 	gobot.Eventer
+	mover *gobuki.Mover
 }
 
 // NewDriver creates a new Kobuki Bot driver
@@ -65,6 +67,7 @@ func NewDriver(a *Adaptor) *Driver {
 		adaptor: a,
 		Eventer: gobot.NewEventer(),
 		started: func() {},
+		mover:   gobuki.NewMover(),
 	}
 
 	d.AddEvent(GyroEvent)
@@ -144,8 +147,8 @@ func (d *Driver) SetCurrentWheelsTolerance(t int) error {
 }
 
 // Move moves the robot
-func (d *Driver) Move(velocity, rotation int16) {
-	d.adaptor.bot.Send(commands.MoveCmd(velocity, rotation))
+func (d *Driver) Move(vx, wz float64) {
+	d.adaptor.bot.Send(d.mover.Move(vx, wz))
 }
 
 // PlaySoundSequence plays a sound sequence on the robot
