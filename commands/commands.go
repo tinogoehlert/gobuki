@@ -50,13 +50,17 @@ func SoundCmd(note uint16, duration byte) Command {
 	return cmd
 }
 
+// RequestCmd creates a command to request hardware version
 func RequestCmd() Command {
 	cmd := Command{
 		ID:   0x09,
 		Data: make([]byte, 2),
 	}
-	cmd.Data[1] = 0x01
-	//binary.LittleEndian.PutUint16(cmd.Data, 0xB)
+	var v uint16
+	v |= uint16(0x01)
+	v |= uint16(0x02)
+	v |= uint16(0x08)
+	binary.LittleEndian.PutUint16(cmd.Data, v)
 	return cmd
 }
 

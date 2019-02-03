@@ -281,25 +281,29 @@ func (k *Bot) parseFrame(buffer []byte) FeedbackData {
 			err error
 		)
 		switch {
-		case (subID == 0x01 && subLen == 0x0F):
+		case (subID == 0x01):
 			data.BasicSensor, err = sensors.NewBasicSensorFromBytes(buffer[offset+2 : offset+subLen+2])
-		case (subID == 0x03 && subLen == 0x03):
+		case (subID == 0x03):
 			data.DockingIR, err = sensors.NewDockingIRFromBytes(buffer[offset+2 : offset+subLen+2])
-		case (subID == 0x04 && subLen == 0x07):
+		case (subID == 0x04):
 			data.InerTial, err = sensors.NewInertialFromBytes(buffer[offset+2 : offset+subLen+2])
-		case (subID == 0x05 && subLen == 0x06):
+		case (subID == 0x05):
 			data.CliffADC, err = sensors.NewCliffADCFromBytes(buffer[offset+2 : offset+subLen+2])
-		case (subID == 0x06 && subLen == 0x02):
+		case (subID == 0x06):
 			data.CurrenWheels, err = sensors.NewCurrentWheelsFromBytes(buffer[offset+2 : offset+subLen+2])
-		case (subID == 0x0A && subLen == 0x04):
+		case (subID == 0x0A):
 			err = k.hardwareVersion.FromBytes(buffer[offset+2 : offset+subLen+2])
 			fmt.Println("got hw version")
-		case (subID == 0x0B && subLen == 0x04):
+		case (subID == 0x0B):
 			err = k.firmwareVersion.FromBytes(buffer[offset+2 : offset+subLen+2])
 			fmt.Println("got fw version")
 		case (subID == 0x0D):
 			err = k.Gyro.Read(buffer[offset+2 : offset+subLen+2])
-		case (subID == 0x13 && subLen == 0x0C):
+		case (subID == 0x0F):
+			fmt.Println("got EEPROM data -> ", buffer[offset+2:offset+subLen+2])
+		case (subID == 0x10):
+			fmt.Println("got GPIO data -> ", buffer[offset+2:offset+subLen+2])
+		case (subID == 0x13):
 			err = k.uid.FromBytes(buffer[offset+2 : offset+subLen+2])
 			fmt.Println("got UID version")
 		}
