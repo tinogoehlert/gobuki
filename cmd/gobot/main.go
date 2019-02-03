@@ -1,36 +1,47 @@
 package main
 
 import (
-	"log"
 	"time"
 
+	"github.com/tinogoehlert/gobuki/commands"
+
 	gk "github.com/tinogoehlert/gobuki/gobot"
-	ks "github.com/tinogoehlert/gobuki/sensors"
 	"gobot.io/x/gobot"
+	"gobot.io/x/gobot/platforms/keyboard"
 )
 
 func main() {
-	a := gk.NewAdaptorTCP("127.0.0.1:3333")
+	//a := gk.NewAdaptorTCP("192.168.1.176:4161")
+	a := gk.NewAdaptorSerial("/dev/ttyUSB0")
 	kb := gk.NewDriver(a)
+	keys := keyboard.NewDriver()
 
 	kb.OnStart(func() {
-		kb.SetGyroTolerance(0)
+		kb.PlaySoundSequence(commands.ON)
 	})
 
 	work := func() {
-
-		kb.OnGyro(func(g *ks.GyroData) {
-			log.Printf("%f : %f : %f", g.X, g.Y, g.Z)
+		keys.On(keyboard.Key, func(data interface{}) {
+			key := data.(keyboard.KeyEvent)
+			switch key.Key {
+			case keyboard.W:
+				kb.Move(100, 0)
+			case keyboard.A:
+				kb.Move(100, 1)
+			case keyboard.S:
+				kb.Move(-100, 0)
+			case keyboard.D:
+				kb.Move(100, -1)
+			}
 		})
-
-		gobot.Every(1*time.Minute, func() {
-			kb.PlaySoundSequence(gk.SoundOn)
+		gobot.Every(700*time.Millisecond, func() {
+			kb.Move(0, 0)
 		})
 	}
 
 	robot := gobot.NewRobot("kobuki",
 		[]gobot.Connection{a},
-		[]gobot.Device{kb},
+		[]gobot.Device{kb, keys},
 		work,
 	)
 

@@ -19,12 +19,12 @@ type Command struct {
 
 // Serialize packs Command Data in kobuki protocol compatible byte buffer
 func (c *Command) Serialize() []byte {
-	dlen := byte(len(c.Data))
-	buff := make([]byte, 0, dlen+5)
-	buff = append(buff, header0, header1, dlen+2) // add protocol header
-	buff = append(buff, c.ID, dlen)               // add command control data
-	buff = append(buff, c.Data...)                // add payload
-	buff = append(buff, utils.Checksum(buff[2:])) // add checksum
+	dataLen := byte(len(c.Data))
+	buff := make([]byte, 0, dataLen+5)
+	buff = append(buff, header0, header1, dataLen+2) // add protocol header
+	buff = append(buff, c.ID, dataLen)               // add command control data
+	buff = append(buff, c.Data...)                   // add payload
+	buff = append(buff, utils.Checksum(buff[2:]))    // add checksum
 	return buff
 }
 
@@ -53,9 +53,10 @@ func SoundCmd(note uint16, duration byte) Command {
 func RequestCmd() Command {
 	cmd := Command{
 		ID:   0x09,
-		Data: make([]byte, 1),
+		Data: make([]byte, 2),
 	}
-	cmd.Data[0] = 0xB
+	cmd.Data[1] = 0x01
+	//binary.LittleEndian.PutUint16(cmd.Data, 0xB)
 	return cmd
 }
 

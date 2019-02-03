@@ -44,38 +44,29 @@ func (r *PacketReader) ReadData() ([]byte, error) {
 		return nil, nil
 	}
 
-	payloadLen, err := r.buffReader.ReadByte()
+	payloadLenByte, err := r.buffReader.ReadByte()
 	if err != nil {
 		return nil, fmt.Errorf("could not read header bytes: %s", err.Error())
 	}
 
-	n, err := r.buffReader.Read(r.data[:payloadLen])
-	if err != nil {
-		return nil, fmt.Errorf("could not read payloads: %s", err.Error())
-	}
-
-	// second read attempt
-	if n != int(payloadLen) {
-		n2, err := r.buffReader.Read(r.data[n:payloadLen])
-		n += n2
+	var payloadLen = int(payloadLenByte)
+	for i := 0; i < payloadLen; {
+		nb, err := r.buffReader.Read(r.data[i:payloadLen])
+		i += nb
 		if err != nil {
 			return nil, fmt.Errorf("could not read payloads: %s", err.Error())
 		}
 	}
 
-	if n != int(payloadLen) {
-		return nil, fmt.Errorf(ErrPayloadLen)
-	}
-
-	cs, err := r.buffReader.ReadByte()
+	checksumR, err := r.buffReader.ReadByte()
 	if err != nil {
 		return nil, fmt.Errorf("could not read checksum: %s", err.Error())
 	}
 
-	tb := []byte{payloadLen}
-	tb = append(tb, r.data[:payloadLen]...)
-	if cs != utils.Checksum(tb) {
-		return nil, fmt.Errorf("checksum missmatch")
+	checksumL := (payloadLenByte ^ utils.Checksum(r.data[:payloadLen]))
+	if checksumL != checksumR {
+		return nil, fmt.Errorf("checksum missmatch (%d != %d)", checksumL, checksumR)
 	}
+
 	return r.data[:payloadLen], nil
 }

@@ -38,7 +38,7 @@ func prepareBuffer(filedump string) []frame {
 				buffer: data[i : i+frameLen+4],
 			}
 			frames = append(frames, feedbackFrame)
-			i += (frameLen + 2)
+			i += len(feedbackFrame.buffer)
 		} else {
 			i++
 		}

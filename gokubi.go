@@ -76,6 +76,7 @@ func NewBotSerial(dev string) (*Bot, error) {
 		BaudRate:        115200,
 		DataBits:        8,
 		StopBits:        1,
+		ParityMode:      serial.PARITY_NONE,
 		MinimumReadSize: 4,
 	})
 
@@ -111,7 +112,7 @@ func (k *Bot) Start() {
 	packetReader := packets.NewPacketReader(bufio.NewReader(k.conn))
 
 	go func() {
-		reqTick := time.Tick(10 * time.Second)
+		reqTick := time.Tick(1 * time.Second)
 		reqCmd := commands.RequestCmd()
 		k.conn.Write(reqCmd.Serialize())
 		for {
@@ -122,7 +123,7 @@ func (k *Bot) Start() {
 					fmt.Printf("could not send command: %s\n", err.Error())
 				}
 			case <-reqTick:
-				k.conn.Write(reqCmd.Serialize())
+				//k.conn.Write(reqCmd.Serialize())
 			default:
 			}
 			b, err := packetReader.ReadData()
@@ -137,8 +138,6 @@ func (k *Bot) Start() {
 		}
 	}()
 
-	// warmup
-	time.Sleep(500 * time.Millisecond)
 	return
 }
 
@@ -293,18 +292,21 @@ func (k *Bot) parseFrame(buffer []byte) FeedbackData {
 		case (subID == 0x06 && subLen == 0x02):
 			data.CurrenWheels, err = sensors.NewCurrentWheelsFromBytes(buffer[offset+2 : offset+subLen+2])
 		case (subID == 0x0A && subLen == 0x04):
-			k.hardwareVersion.FromBytes(buffer[offset+2 : offset+subLen+2])
+			err = k.hardwareVersion.FromBytes(buffer[offset+2 : offset+subLen+2])
+			fmt.Println("got hw version")
 		case (subID == 0x0B && subLen == 0x04):
-			k.firmwareVersion.FromBytes(buffer[offset+2 : offset+subLen+2])
+			err = k.firmwareVersion.FromBytes(buffer[offset+2 : offset+subLen+2])
+			fmt.Println("got fw version")
 		case (subID == 0x0D):
-			k.Gyro.Read(buffer[offset+2 : offset+subLen+2])
+			err = k.Gyro.Read(buffer[offset+2 : offset+subLen+2])
 		case (subID == 0x13 && subLen == 0x0C):
-			k.uid.FromBytes(buffer[offset+2 : offset+subLen+2])
+			err = k.uid.FromBytes(buffer[offset+2 : offset+subLen+2])
+			fmt.Println("got UID version")
 		}
 
 		if err != nil {
 			fmt.Println(err)
-			k.logChan <- fmt.Sprintf("could not parse data: %s", err.Error())
+			k.logChan <- fmt.Sprintf("[%d] could not parse data: %s", subID, err.Error())
 		}
 
 		offset += subLen + 2

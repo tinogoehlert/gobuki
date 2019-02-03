@@ -64,6 +64,7 @@ func NewDriver(a *Adaptor) *Driver {
 		name:    "Kobuki",
 		adaptor: a,
 		Eventer: gobot.NewEventer(),
+		started: func() {},
 	}
 
 	d.AddEvent(GyroEvent)
@@ -99,6 +100,12 @@ func (d *Driver) Start() error {
 	d.adaptor.bot.OnAll(func(name string, data interface{}) {
 		d.Publish(name, data)
 	})
+
+	go func() {
+		for {
+			fmt.Println(d.adaptor.bot.LogChannel())
+		}
+	}()
 
 	return nil
 }

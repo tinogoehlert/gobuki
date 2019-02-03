@@ -38,15 +38,16 @@ type UniqueID struct {
 }
 
 // FromBytes reads UID from bytes
-func (u *UniqueID) FromBytes(b []byte) (*UniqueID, error) {
+func (u *UniqueID) FromBytes(b []byte) error {
 	if len(b) < 3 {
-		return nil, errors.New("length missmatch")
+		return errors.New("length missmatch")
 	}
-	return &UniqueID{
-		UDID0: binary.LittleEndian.Uint32(b[:4]),
-		UDID1: binary.LittleEndian.Uint32(b[4:8]),
-		UDID2: binary.LittleEndian.Uint32(b[8:12]),
-	}, nil
+
+	u.UDID0 = binary.LittleEndian.Uint32(b[:4])
+	u.UDID1 = binary.LittleEndian.Uint32(b[4:8])
+	u.UDID2 = binary.LittleEndian.Uint32(b[8:12])
+
+	return nil
 }
 
 func (u *UniqueID) String() string {
