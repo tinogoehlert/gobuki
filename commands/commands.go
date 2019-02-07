@@ -2,6 +2,7 @@ package commands
 
 import (
 	"encoding/binary"
+	"fmt"
 
 	"github.com/tinogoehlert/gobuki/utils"
 )
@@ -61,6 +62,16 @@ func RequestCmd() Command {
 	v |= uint16(0x02)
 	v |= uint16(0x08)
 	binary.LittleEndian.PutUint16(cmd.Data, v)
+	return cmd
+}
+
+// GetControllerGain Request PID gain of wheel velocity controller of robot.
+func GetControllerGain() Command {
+	cmd := Command{
+		ID:   0x0E,
+		Data: make([]byte, 1),
+	}
+	fmt.Println(cmd.Serialize())
 	return cmd
 }
 

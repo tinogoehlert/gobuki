@@ -67,7 +67,6 @@ func NewDriver(a *Adaptor) *Driver {
 		adaptor: a,
 		Eventer: gobot.NewEventer(),
 		started: func() {},
-		mover:   gobuki.NewMover(),
 	}
 
 	d.AddEvent(GyroEvent)
@@ -98,6 +97,8 @@ func (d *Driver) SetName(s string) {
 
 // Start initiates the Driver
 func (d *Driver) Start() error {
+	d.mover = gobuki.NewMover(d.adaptor.bot)
+	d.adaptor.bot.AddModule(d.mover)
 	d.adaptor.bot.Start()
 	d.started()
 	d.adaptor.bot.OnAll(func(name string, data interface{}) {
@@ -148,7 +149,12 @@ func (d *Driver) SetCurrentWheelsTolerance(t int) error {
 
 // Move moves the robot
 func (d *Driver) Move(vx, wz float64) {
-	d.adaptor.bot.Send(d.mover.Move(vx, wz))
+	d.mover.Move(vx, wz)
+}
+
+// MoveRaw moves the robot also
+func (d *Driver) MoveRaw(speed, radius int16) {
+	d.mover.MoveRaw(speed, radius)
 }
 
 // PlaySoundSequence plays a sound sequence on the robot

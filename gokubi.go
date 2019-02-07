@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"sync"
 	"time"
 
 	"github.com/jacobsa/go-serial/serial"
@@ -35,20 +36,28 @@ type ToleranceCfg struct {
 	currentWheels int
 }
 
+// Module represents a Kobuki Bot Module
+type Module interface {
+	Tick(FeedbackData) *commands.Command
+}
+
 // Bot Represents a Kobuki Bot
 type Bot struct {
 	conn            io.ReadWriteCloser
 	lastFrame       FeedbackData
 	currentFrame    FeedbackData
 	Gyro            *sensors.Gyro
+	ControllerGain  *sensors.ControllerGain
 	callBacks       map[string][]Callback
 	allCallback     []AllCallback
 	cmdChan         chan commands.Command
 	logChan         chan string
+	modules         []Module
 	toleranceCfg    ToleranceCfg
 	hardwareVersion Version
 	firmwareVersion Version
 	uid             UniqueID
+	mutex           sync.Mutex
 }
 
 // NewBotTCP creates a new Bot instance and connects to a Kobuki Bot
@@ -92,10 +101,12 @@ func NewBotSerial(dev string) (*Bot, error) {
 
 func (k *Bot) initBot() {
 	k.Gyro = sensors.NewGyroADC(64, 8)
+	k.ControllerGain = &sensors.ControllerGain{}
 	k.cmdChan = make(chan commands.Command, 1)
 	k.callBacks = make(map[string][]Callback)
 	k.logChan = make(chan string)
 	k.allCallback = []AllCallback{}
+	k.modules = []Module{}
 	k.toleranceCfg = ToleranceCfg{
 		gyro:     0.01,
 		cliffADC: 50,
@@ -112,9 +123,8 @@ func (k *Bot) Start() {
 	packetReader := packets.NewPacketReader(bufio.NewReader(k.conn))
 
 	go func() {
-		reqTick := time.Tick(1 * time.Second)
-		reqCmd := commands.RequestCmd()
-		k.conn.Write(reqCmd.Serialize())
+		versionCmd := commands.RequestCmd()
+		k.conn.Write(versionCmd.Serialize())
 		for {
 			select {
 			case cmd := <-k.cmdChan:
@@ -122,8 +132,6 @@ func (k *Bot) Start() {
 				if err != nil {
 					fmt.Printf("could not send command: %s\n", err.Error())
 				}
-			case <-reqTick:
-				//k.conn.Write(reqCmd.Serialize())
 			default:
 			}
 			b, err := packetReader.ReadData()
@@ -134,6 +142,12 @@ func (k *Bot) Start() {
 				currentFrame := k.parseFrame(b)
 				k.hasChangedData(currentFrame)
 				k.lastFrame = currentFrame
+				for _, m := range k.modules {
+					cmd := m.Tick(currentFrame)
+					if cmd != nil {
+						k.conn.Write(cmd.Serialize())
+					}
+				}
 			}
 		}
 	}()
@@ -173,15 +187,19 @@ func (k *Bot) SetCurrentWheelsTolerance(t int) {
 
 //On registers a new Callback
 func (k *Bot) On(event string, cb Callback) {
+	k.mutex.Lock()
 	if _, ok := k.callBacks[event]; !ok {
 		k.callBacks[event] = []Callback{}
 	}
 	k.callBacks[event] = append(k.callBacks[event], cb)
+	k.mutex.Unlock()
 }
 
 //OnAll registers a new Callback for all events
 func (k *Bot) OnAll(cb AllCallback) {
+	k.mutex.Lock()
 	k.allCallback = append(k.allCallback, cb)
+	k.mutex.Unlock()
 }
 
 // Send sends Command to Bot
@@ -192,6 +210,13 @@ func (k *Bot) Send(cmd commands.Command) {
 // LogChannel waits and returns log entry. blocking
 func (k *Bot) LogChannel() string {
 	return <-k.logChan
+}
+
+// AddModule adds a module
+func (k *Bot) AddModule(m Module) {
+	k.mutex.Lock()
+	k.modules = append(k.modules, m)
+	k.mutex.Unlock()
 }
 
 func (k *Bot) emitEvent(name string, data interface{}) {
@@ -273,43 +298,42 @@ func (k *Bot) parseFrame(buffer []byte) FeedbackData {
 	var data FeedbackData
 	for offset := 0; (offset + 1) < len(buffer); {
 		var (
-			subID  = int(buffer[offset])
-			subLen = int(buffer[offset+1])
+			subID   = int(buffer[offset])
+			subLen  = int(buffer[offset+1])
+			payload = buffer[offset+2 : offset+subLen+2]
+			err     error
 		)
 
-		var (
-			err error
-		)
-		switch {
-		case (subID == 0x01):
-			data.BasicSensor, err = sensors.NewBasicSensorFromBytes(buffer[offset+2 : offset+subLen+2])
-		case (subID == 0x03):
-			data.DockingIR, err = sensors.NewDockingIRFromBytes(buffer[offset+2 : offset+subLen+2])
-		case (subID == 0x04):
-			data.InerTial, err = sensors.NewInertialFromBytes(buffer[offset+2 : offset+subLen+2])
-		case (subID == 0x05):
-			data.CliffADC, err = sensors.NewCliffADCFromBytes(buffer[offset+2 : offset+subLen+2])
-		case (subID == 0x06):
-			data.CurrenWheels, err = sensors.NewCurrentWheelsFromBytes(buffer[offset+2 : offset+subLen+2])
-		case (subID == 0x0A):
-			err = k.hardwareVersion.FromBytes(buffer[offset+2 : offset+subLen+2])
-			fmt.Println("got hw version")
-		case (subID == 0x0B):
-			err = k.firmwareVersion.FromBytes(buffer[offset+2 : offset+subLen+2])
-			fmt.Println("got fw version")
-		case (subID == 0x0D):
-			err = k.Gyro.Read(buffer[offset+2 : offset+subLen+2])
-		case (subID == 0x0F):
-			fmt.Println("got EEPROM data -> ", buffer[offset+2:offset+subLen+2])
-		case (subID == 0x10):
-			fmt.Println("got GPIO data -> ", buffer[offset+2:offset+subLen+2])
-		case (subID == 0x13):
-			err = k.uid.FromBytes(buffer[offset+2 : offset+subLen+2])
-			fmt.Println("got UID version")
+		switch subID {
+		case 0x01:
+			data.BasicSensor, err = sensors.NewBasicSensorFromBytes(payload)
+		case 0x03:
+			data.DockingIR, err = sensors.NewDockingIRFromBytes(payload)
+		case 0x04:
+			data.InerTial, err = sensors.NewInertialFromBytes(payload)
+		case 0x05:
+			data.CliffADC, err = sensors.NewCliffADCFromBytes(payload)
+		case 0x06:
+			data.CurrenWheels, err = sensors.NewCurrentWheelsFromBytes(payload)
+		case 0x0A:
+			err = k.hardwareVersion.FromBytes(payload)
+		case 0x0B:
+			err = k.firmwareVersion.FromBytes(payload)
+		case 0x0D:
+			err = k.Gyro.FromBytes(payload)
+		case 0x0F:
+			// TODO
+			break
+		case 0x10:
+			// TODO
+			break
+		case 0x13:
+			err = k.uid.FromBytes(payload)
+		case 0x15:
+			err = k.ControllerGain.FromBytes(payload)
 		}
 
 		if err != nil {
-			fmt.Println(err)
 			k.logChan <- fmt.Sprintf("[%d] could not parse data: %s", subID, err.Error())
 		}
 

@@ -74,8 +74,8 @@ func (g *Gyro) GetNewData() *GyroData {
 	}
 }
 
-// Read reads raw gyro data from bytes
-func (g *Gyro) Read(p []byte) error {
+// FromBytes reads raw gyro data from bytes
+func (g *Gyro) FromBytes(p []byte) error {
 	if len(p) < 8 {
 		return fmt.Errorf("gyroscope currupt read")
 	}

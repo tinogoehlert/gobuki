@@ -8,23 +8,22 @@ import (
 
 // Version represents kobuki hardware version
 type Version struct {
-	Patch uint8
 	Minor uint8
 	Major uint8
 }
 
 func (v *Version) String() string {
-	return fmt.Sprintf("%d.%d-%d", v.Major, v.Minor, v.Patch)
+	return fmt.Sprintf("%d-%d", v.Major, v.Minor)
 }
 
 // FromBytes reads version from bytes
 func (v *Version) FromBytes(b []byte) error {
-	if len(b) < 3 {
-		return errors.New("length missmatch")
+	if len(b) < 2 {
+		return fmt.Errorf("length missmatch (%d)", len(b))
 	}
-	v.Patch = b[0]
+
+	v.Major = b[0]
 	v.Minor = b[1]
-	v.Major = b[2]
 	return nil
 }
 

@@ -127,7 +127,8 @@ func main() {
 TODO:
 
 - Implement GPIO.
-- Add differential drive helpers.
+- Implement EEPROM
+- port DockDrive demo to gobuki
 
 Resouces:
 
@@ -135,3 +136,4 @@ http://kobuki.yujinrobot.com/about2/
 
 http://yujinrobot.github.io/kobuki/enAppendixProtocolSpecification.html
 
+https://media.readthedocs.org/pdf/iclebo-kobuki/latest/iclebo-kobuki.pdf

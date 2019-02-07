@@ -1,8 +1,6 @@
 package main
 
 import (
-	"time"
-
 	"github.com/tinogoehlert/gobuki/commands"
 
 	gk "github.com/tinogoehlert/gobuki/gobot"
@@ -11,8 +9,8 @@ import (
 )
 
 func main() {
-	//a := gk.NewAdaptorTCP("192.168.1.176:4161")
-	a := gk.NewAdaptorSerial("/dev/ttyUSB0")
+	a := gk.NewAdaptorTCP("192.168.1.176:4161")
+	//a := gk.NewAdaptorSerial("/dev/ttyUSB0")
 	kb := gk.NewDriver(a)
 	keys := keyboard.NewDriver()
 
@@ -25,17 +23,14 @@ func main() {
 			key := data.(keyboard.KeyEvent)
 			switch key.Key {
 			case keyboard.W:
-				kb.Move(1, 0)
-			case keyboard.A:
-				kb.Move(0, 1)
+				kb.Move(0.4, 0)
 			case keyboard.S:
-				kb.Move(-1, 0)
+				kb.Move(-0.4, 0)
+			case keyboard.A:
+				kb.Move(0, 0.7)
 			case keyboard.D:
-				kb.Move(-1, 0)
+				kb.Move(0, -0.7)
 			}
-		})
-		gobot.Every(1*time.Second, func() {
-			kb.Move(0, 0)
 		})
 	}
 
