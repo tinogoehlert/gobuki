@@ -1,0 +1,102 @@
+{
+    "name": "Sony PLAYSTATION(R)4 Controller",
+    "guid": "1234",
+    "hat": [
+        {
+            "name": "left",
+            "id": 4
+        }
+    ],
+    "axis": [
+        {
+            "name": "left_x",
+            "id": 0
+        },
+        {
+            "name": "left_y",
+            "id": 1
+        },
+        {
+            "name": "right_x",
+            "id": 2
+        },
+        {
+            "name": "right_y",
+            "id": 3
+        },
+        {
+            "name": "l2",
+            "id": 4
+        },
+        {
+            "name": "r2",
+            "id": 5
+        },
+        {
+            "name": "down",
+            "id": 7
+        }
+    ],
+    "buttons": [
+        {
+            "name": "square",
+            "id": 3
+        },
+        {
+            "name": "triangle",
+            "id": 2
+        },
+        {
+            "name": "circle",
+            "id": 1
+        },
+        {
+            "name": "x",
+            "id": 0
+        },
+        {
+            "name": "l1",
+            "id": 9
+        },
+        {
+            "name": "r1",
+            "id": 10
+        },
+        {
+            "name": "r3",
+            "id": 8
+        },
+        {
+            "name": "l3",
+            "id": 7
+        },
+        {
+            "name": "share",
+            "id": 4
+        },
+        {
+            "name": "options",
+            "id": 6
+        },
+        {
+            "name": "ps",
+            "id": 5
+        },
+        {
+            "name": "up",
+            "id": 11
+        },
+        {
+            "name": "down",
+            "id": 12
+        },
+        {
+            "name": "left",
+            "id": 13
+        },
+        {
+            "name": "right",
+            "id": 14
+        }
+    ]
+}

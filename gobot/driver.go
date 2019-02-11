@@ -1,6 +1,7 @@
 package kobuki
 
 import (
+	"encoding/gob"
 	"errors"
 	"fmt"
 
@@ -11,6 +12,8 @@ import (
 )
 
 const (
+	// FeedbackEvent event
+	FeedbackEvent = "Feedback"
 	// GyroEvent event
 	GyroEvent = "Gyro"
 	// CliffEvent event
@@ -50,13 +53,20 @@ const (
 	SoundCleaningEnd = commands.CLEANINGEND
 )
 
+// Feedback holds feedback data
+type Feedback struct {
+	Name string
+	Data interface{}
+}
+
 // Driver is the interface that describes a driver in gobot
 type Driver struct {
 	name    string
 	adaptor *Adaptor
 	started func()
 	gobot.Eventer
-	mover *gobuki.Mover
+	mover   *gobuki.Mover
+	encoder gob.Encoder
 }
 
 // NewDriver creates a new Kobuki Bot driver
@@ -69,19 +79,7 @@ func NewDriver(a *Adaptor) *Driver {
 		started: func() {},
 	}
 
-	d.AddEvent(GyroEvent)
-	d.AddEvent(CliffEvent)
-	d.AddEvent(CliffADCEvent)
-	d.AddEvent(BumperEvent)
-	d.AddEvent(ButtonsEvent)
-	d.AddEvent(WheelsDropEvent)
-	d.AddEvent(WheelsEncoderEvent)
-	d.AddEvent(WheelsPWMEvent)
-	d.AddEvent(InertialEvent)
-	d.AddEvent(DockingIREvent)
-	d.AddEvent(ChargeStateEvent)
-	d.AddEvent(BatteryVoltageEvent)
-
+	d.AddEvent(FeedbackEvent)
 	return d
 }
 
@@ -102,7 +100,10 @@ func (d *Driver) Start() error {
 	d.adaptor.bot.Start()
 	d.started()
 	d.adaptor.bot.OnAll(func(name string, data interface{}) {
-		d.Publish(name, data)
+		d.Publish(FeedbackEvent, Feedback{
+			Name: name,
+			Data: data,
+		})
 	})
 
 	go func() {

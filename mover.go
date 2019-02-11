@@ -55,6 +55,12 @@ func (m *Mover) Tick(data FeedbackData) *commands.Command {
 	)
 	cmd := commands.MoveCmd(uint16(m.speed), uint16(m.radius))
 	if time.Now().Sub(m.lastMovedTime) > (200 * time.Millisecond) {
+		if m.speed > 0 {
+			m.speed--
+		}
+		if m.speed < 0 {
+			m.speed++
+		}
 		m.speed = 0
 		m.radius = 0
 	}

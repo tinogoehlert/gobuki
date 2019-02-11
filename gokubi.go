@@ -2,6 +2,8 @@ package gobuki
 
 import (
 	"bufio"
+	"bytes"
+	"encoding/gob"
 	"fmt"
 	"io"
 	"net"
@@ -58,6 +60,20 @@ type Bot struct {
 	firmwareVersion Version
 	uid             UniqueID
 	mutex           sync.Mutex
+}
+
+func init() {
+	gob.Register(sensors.Bumper{})
+	gob.Register(sensors.Buttons{})
+	gob.Register(sensors.GyroData{})
+	gob.Register(sensors.WheelsDrop{})
+	gob.Register(sensors.WheelsEncoder{})
+	gob.Register(sensors.WheelsPWM{})
+	gob.Register(sensors.Inertial{})
+	gob.Register(sensors.DockingIR{})
+	gob.Register(sensors.Cliff{})
+	gob.Register(sensors.CliffADC{})
+	gob.Register(sensors.Discharging)
 }
 
 // NewBotTCP creates a new Bot instance and connects to a Kobuki Bot
@@ -340,4 +356,20 @@ func (k *Bot) parseFrame(buffer []byte) FeedbackData {
 		offset += subLen + 2
 	}
 	return data
+}
+
+// EncodeGob encode data to goba
+func EncodeGob(data interface{}) ([]byte, error) {
+	b := new(bytes.Buffer)
+	err := gob.NewEncoder(b).Encode(data)
+	if err != nil {
+		return nil, err
+	}
+	return b.Bytes(), nil
+}
+
+// DecodeGob data to gob
+func DecodeGob(data []byte, v interface{}) error {
+	b := bytes.NewBuffer(data)
+	return gob.NewDecoder(b).Decode(v)
 }
