@@ -45,7 +45,7 @@ func main() {
 		gobot.Every(10*time.Millisecond, func() {
 			binary.LittleEndian.PutUint64(buff[:8], math.Float64bits(vx))
 			binary.LittleEndian.PutUint64(buff[8:16], math.Float64bits(wz))
-			natsAdaptor.Publish("lovoobot/feedback/move", buff)
+			natsAdaptor.Publish("lovoobot/control/move", buff)
 		})
 
 	}

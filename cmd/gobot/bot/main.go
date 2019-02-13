@@ -49,7 +49,7 @@ func main() {
 			natsAdaptor.Publish("lovoobot/feedback/"+event.Name, msg)
 		})
 
-		natsAdaptor.On("lovoobot/feedback/move_raw", func(msg nats.Message) {
+		natsAdaptor.On("lovoobot/control/move_raw", func(msg nats.Message) {
 			if len(msg.Data) == 4 {
 				s := int16(binary.LittleEndian.Uint16(msg.Data[0:2]))
 				r := int16(binary.LittleEndian.Uint16(msg.Data[2:4]))
@@ -57,7 +57,7 @@ func main() {
 			}
 		})
 
-		natsAdaptor.On("lovoobot/feedback/move", func(msg nats.Message) {
+		natsAdaptor.On("lovoobot/control/move", func(msg nats.Message) {
 			if len(msg.Data) == 16 {
 				vx := math.Float64frombits(binary.LittleEndian.Uint64(msg.Data[0:8]))
 				wz := math.Float64frombits(binary.LittleEndian.Uint64(msg.Data[8:16]))
